@@ -10,12 +10,25 @@ import (
 
 type Querier interface {
 	CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error)
+	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
+	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
+	CreateRecipeStep(ctx context.Context, arg CreateRecipeStepParams) (RecipeStep, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAuthorById(ctx context.Context, id int64) (Author, error)
+	DeleteRecipeById(ctx context.Context, id int64) (Recipe, error)
+	DeleteRecipeIngredientById(ctx context.Context, id int64) (RecipeIngredient, error)
+	DeleteRecipeStepById(ctx context.Context, id int64) (RecipeStep, error)
 	GetAuthor(ctx context.Context, id int64) (Author, error)
+	GetRecipe(ctx context.Context, id int64) (Recipe, error)
 	GetUser(ctx context.Context, email string) (User, error)
 	ListAuthors(ctx context.Context, arg ListAuthorsParams) ([]Author, error)
+	ListRecipeIngredientsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeIngredient, error)
+	ListRecipeStepsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeStep, error)
+	ListRecipes(ctx context.Context, arg ListRecipesParams) ([]Recipe, error)
 	UpdateAuthorById(ctx context.Context, arg UpdateAuthorByIdParams) (Author, error)
+	UpdateRecipeById(ctx context.Context, arg UpdateRecipeByIdParams) (Recipe, error)
+	UpdateRecipeIngredientById(ctx context.Context, arg UpdateRecipeIngredientByIdParams) (RecipeIngredient, error)
+	UpdateRecipeStepById(ctx context.Context, arg UpdateRecipeStepByIdParams) (RecipeStep, error)
 }
 
 var _ Querier = (*Queries)(nil)

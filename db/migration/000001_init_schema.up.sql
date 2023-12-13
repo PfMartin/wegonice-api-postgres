@@ -28,6 +28,7 @@ CREATE TABLE "recipes" (
 
 CREATE TABLE "recipe_ingredients" (
   "id" bigserial PRIMARY KEY,
+  "rank" int NOT NULL,
   "ingredient_name" varchar NOT NULL,
   "unit" varchar NOT NULL,
   "amount" float NOT NULL DEFAULT 0,
@@ -37,7 +38,8 @@ CREATE TABLE "recipe_ingredients" (
 
 CREATE TABLE "recipe_steps" (
   "id" bigserial PRIMARY KEY,
-  "description" varchar NOT NULL,
+  "rank" int NOT NULL,
+  "step_description" varchar NOT NULL,
   "recipe_id" bigserial NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );

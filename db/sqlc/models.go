@@ -31,6 +31,7 @@ type Recipe struct {
 
 type RecipeIngredient struct {
 	ID             int64  `json:"id"`
+	Rank           int32  `json:"rank"`
 	IngredientName string `json:"ingredient_name"`
 	Unit           string `json:"unit"`
 	// cannot be negative
@@ -40,10 +41,11 @@ type RecipeIngredient struct {
 }
 
 type RecipeStep struct {
-	ID          int64     `json:"id"`
-	Description string    `json:"description"`
-	RecipeID    int64     `json:"recipe_id"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID              int64     `json:"id"`
+	Rank            int32     `json:"rank"`
+	StepDescription string    `json:"step_description"`
+	RecipeID        int64     `json:"recipe_id"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type User struct {
