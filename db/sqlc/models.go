@@ -10,7 +10,8 @@ import (
 )
 
 type Author struct {
-	Name        string         `json:"name"`
+	ID          int64          `json:"id"`
+	AuthorName  sql.NullString `json:"author_name"`
 	Website     sql.NullString `json:"website"`
 	Instagram   sql.NullString `json:"instagram"`
 	Youtube     sql.NullString `json:"youtube"`
@@ -20,9 +21,9 @@ type Author struct {
 
 type Recipe struct {
 	ID           int64          `json:"id"`
-	Name         string         `json:"name"`
+	RecipeName   string         `json:"recipe_name"`
 	Link         sql.NullString `json:"link"`
-	AuthorName   string         `json:"author_name"`
+	AuthorID     int64          `json:"author_id"`
 	PrepTime     float64        `json:"prep_time"`
 	PrepTimeUnit string         `json:"prep_time_unit"`
 	UserCreated  string         `json:"user_created"`
@@ -30,8 +31,9 @@ type Recipe struct {
 }
 
 type RecipeIngredient struct {
-	Name string `json:"name"`
-	Unit string `json:"unit"`
+	ID             int64  `json:"id"`
+	IngredientName string `json:"ingredient_name"`
+	Unit           string `json:"unit"`
 	// cannot be negative
 	Amount    float64   `json:"amount"`
 	RecipeID  int64     `json:"recipe_id"`
@@ -46,10 +48,8 @@ type RecipeStep struct {
 }
 
 type User struct {
-	Username          string    `json:"username"`
-	HashedPassword    string    `json:"hashed_password"`
-	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
+	HashedPassword    string    `json:"hashed_password"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
