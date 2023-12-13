@@ -5,29 +5,28 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
 type Author struct {
-	ID          int64          `json:"id"`
-	AuthorName  sql.NullString `json:"author_name"`
-	Website     sql.NullString `json:"website"`
-	Instagram   sql.NullString `json:"instagram"`
-	Youtube     sql.NullString `json:"youtube"`
-	UserCreated string         `json:"user_created"`
-	CreatedAt   time.Time      `json:"created_at"`
+	ID          int64     `json:"id"`
+	AuthorName  string    `json:"author_name"`
+	Website     string    `json:"website"`
+	Instagram   string    `json:"instagram"`
+	Youtube     string    `json:"youtube"`
+	UserCreated string    `json:"user_created"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Recipe struct {
-	ID           int64          `json:"id"`
-	RecipeName   string         `json:"recipe_name"`
-	Link         sql.NullString `json:"link"`
-	AuthorID     int64          `json:"author_id"`
-	PrepTime     float64        `json:"prep_time"`
-	PrepTimeUnit string         `json:"prep_time_unit"`
-	UserCreated  string         `json:"user_created"`
-	CreatedAt    time.Time      `json:"created_at"`
+	ID           int64     `json:"id"`
+	RecipeName   string    `json:"recipe_name"`
+	Link         string    `json:"link"`
+	AuthorID     int64     `json:"author_id"`
+	PrepTime     float64   `json:"prep_time"`
+	PrepTimeUnit string    `json:"prep_time_unit"`
+	UserCreated  string    `json:"user_created"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type RecipeIngredient struct {

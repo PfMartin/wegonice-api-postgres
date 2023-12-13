@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -23,11 +22,11 @@ INSERT INTO authors (
 `
 
 type CreateAuthorParams struct {
-	AuthorName  sql.NullString `json:"author_name"`
-	Website     sql.NullString `json:"website"`
-	Instagram   sql.NullString `json:"instagram"`
-	Youtube     sql.NullString `json:"youtube"`
-	UserCreated string         `json:"user_created"`
+	AuthorName  string `json:"author_name"`
+	Website     string `json:"website"`
+	Instagram   string `json:"instagram"`
+	Youtube     string `json:"youtube"`
+	UserCreated string `json:"user_created"`
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
@@ -148,11 +147,11 @@ RETURNING id, author_name, website, instagram, youtube, user_created, created_at
 `
 
 type UpdateAuthorByIdParams struct {
-	ID         int64          `json:"id"`
-	AuthorName sql.NullString `json:"author_name"`
-	Website    sql.NullString `json:"website"`
-	Instagram  sql.NullString `json:"instagram"`
-	Youtube    sql.NullString `json:"youtube"`
+	ID         int64  `json:"id"`
+	AuthorName string `json:"author_name"`
+	Website    string `json:"website"`
+	Instagram  string `json:"instagram"`
+	Youtube    string `json:"youtube"`
 }
 
 func (q *Queries) UpdateAuthorById(ctx context.Context, arg UpdateAuthorByIdParams) (Author, error) {

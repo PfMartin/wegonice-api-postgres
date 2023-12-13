@@ -7,10 +7,10 @@ CREATE TABLE "users" (
 
 CREATE TABLE "authors" (
   "id" bigserial PRIMARY KEY,
-  "author_name" varchar,
-  "website" varchar,
-  "instagram" varchar,
-  "youtube" varchar,
+  "author_name" varchar NOT NULL,
+  "website" varchar NOT NULL DEFAULT '',
+  "instagram" varchar NOT NULL DEFAULT '',
+  "youtube" varchar NOT NULL DEFAULT '',
   "user_created" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -18,7 +18,7 @@ CREATE TABLE "authors" (
 CREATE TABLE "recipes" (
   "id" bigserial PRIMARY KEY,
   "recipe_name" varchar NOT NULL,
-  "link" varchar,
+  "link" varchar NOT NULL DEFAULT '',
   "author_id" bigserial NOT NULL,
   "prep_time" float NOT NULL DEFAULT 0,
   "prep_time_unit" varchar NOT NULL DEFAULT 'min',
