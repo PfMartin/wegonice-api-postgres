@@ -1,7 +1,7 @@
 CONTAINER_NAME := wegonice-db
 CONTAINER_PORT := 5432
 DB_NAME := wegonice
-DB_USER := $(DB_USER)
+DB_USER := root
 DB_USER_PASSWORD := secret
 
 # Docker commands #
