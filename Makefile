@@ -50,6 +50,9 @@ sqlc:
 .PHONY: sqlc
 
 # Testing #
+mock:
+	mockgen -build_flags=--mod=mod -package mockdb -destination db/mock/store.go github.com/PfMartin/wegonice-api/db/sqlc Store
+
 test:
 	go test -v --cover ./...
 
