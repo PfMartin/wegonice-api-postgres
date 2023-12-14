@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS recipe_ingredients;
+DROP TABLE IF EXISTS recipe_steps;
+DROP TABLE IF EXISTS recipes;
+DROP TABLE IF EXISTS authors;
+DROP TABLE IF EXISTS users;
