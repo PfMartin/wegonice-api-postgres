@@ -21,6 +21,7 @@ type renewAccessTokenResponse struct {
 func (server *Server) renewAccessToken(ctx *gin.Context) {
 	var req renewAccessTokenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -28,6 +29,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 	refreshPayload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
 	}
 
 	session, err := server.store.GetSession(ctx, refreshPayload.ID)
@@ -54,7 +56,6 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 	}
 
 	if session.RefreshToken != req.RefreshToken {
-		err := fmt.Errorf("session token mismatch")
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}

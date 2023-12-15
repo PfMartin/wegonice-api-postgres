@@ -20,11 +20,9 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %v", err)
-
 	}
 
 	server := &Server{config: config, store: store, tokenMaker: tokenMaker}
-
 	server.SetupRouter()
 
 	return server, nil
@@ -34,7 +32,7 @@ func (server *Server) SetupRouter() {
 	router := gin.Default()
 
 	router.POST("/users", server.createUser)
-	// router.POST("/users/login", server.loginUser)
+	router.POST("/users/login", server.loginUser)
 	router.POST("/token/renew_access", server.renewAccessToken)
 
 	server.router = router
