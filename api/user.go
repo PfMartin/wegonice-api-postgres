@@ -62,3 +62,43 @@ func (server *Server) createUser(ctx *gin.Context) {
 	rsp := newUserResponse(user)
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+// type loginUserRequest struct {
+// 	Email    string `json:"email" binding:"required,email"`
+// 	Password string `json:"password" binding:"required,min=6"`
+// }
+
+// type loginUserResponse struct {
+// 	SessionID             uuid.UUID    `json:"session_id"`
+// 	AccessToken           string       `json:"access_token"`
+// 	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+// 	RefreshToken          string       `json:"refresh_token"`
+// 	RefreshTokenExpiresAt string       `json:"refresh_token_expires_at"`
+// 	User                  userResponse `json:"user"`
+// }
+
+// TODO: Create loginUser method when token functionality is in place
+// func (server *Server) loginUser(ctx *gin.Context) {
+// 	var req loginUserRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		ctx.JSON(http.StatusBadGateway, errorResponse(err))
+// 		return
+// 	}
+
+// 	user, err := server.store.GetUser(ctx, req.Email)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+// 			return
+// 		}
+
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 	}
+
+// 	err = util.CheckPassword(req.Password, user.HashedPassword)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+// 		return
+// 	}
+
+// }
