@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -13,6 +15,7 @@ type Querier interface {
 	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
 	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
 	CreateRecipeStep(ctx context.Context, arg CreateRecipeStepParams) (RecipeStep, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAuthorById(ctx context.Context, id int64) (Author, error)
 	DeleteRecipeById(ctx context.Context, id int64) (Recipe, error)
@@ -20,6 +23,7 @@ type Querier interface {
 	DeleteRecipeStepById(ctx context.Context, id int64) (RecipeStep, error)
 	GetAuthor(ctx context.Context, id int64) (Author, error)
 	GetRecipe(ctx context.Context, id int64) (Recipe, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, email string) (User, error)
 	ListAuthors(ctx context.Context, arg ListAuthorsParams) ([]Author, error)
 	ListRecipeIngredientsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeIngredient, error)

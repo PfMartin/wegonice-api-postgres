@@ -1,3 +1,14 @@
+CREATE TABLE "sessions" (
+  "id" uuid PRIMARY KEY,
+  "email" varchar NOT NULL,
+  "refresh_token" varchar NOT NULL,
+  "user_agent" varchar NOT NULL,
+  "client_ip" varchar NOT NULL,
+  "is_blocked" bool NOT NULL DEFAULT false,
+  "expires_at" timestamptz NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
 CREATE TABLE "users" (
   "email" varchar PRIMARY KEY,
   "hashed_password" varchar NOT NULL,
@@ -59,6 +70,8 @@ CREATE INDEX ON "recipe_ingredients" ("ingredient_name");
 CREATE INDEX ON "recipe_steps" ("id");
 
 COMMENT ON COLUMN "recipe_ingredients"."amount" IS 'cannot be negative';
+
+ALTER TABLE "sessions" ADD FOREIGN KEY ("email") REFERENCES "users" ("email");
 
 ALTER TABLE "authors" ADD FOREIGN KEY ("user_created") REFERENCES "users" ("email");
 
