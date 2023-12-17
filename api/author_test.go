@@ -39,13 +39,21 @@ func TestCreateAuthorAPI(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"author_name": util.RandomString(6),
-				"website":     util.RandomString(6),
-				"instagram":   util.RandomString(6),
-				"youtube":     util.RandomString(6),
+				"author_name": author.AuthorName,
+				"website":     author.Website,
+				"instagram":   author.Instagram,
+				"youtube":     author.Youtube,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().CreateAuthor(gomock.Any(), gomock.Any()).Times(1).Return(author, nil)
+				arg := db.CreateAuthorParams{
+					AuthorName:  author.AuthorName,
+					Website:     author.Website,
+					Instagram:   author.Instagram,
+					Youtube:     author.Youtube,
+					UserCreated: author.UserCreated,
+				}
+
+				store.EXPECT().CreateAuthor(gomock.Any(), arg).Times(1).Return(author, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
