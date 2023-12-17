@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,6 +62,7 @@ func TestCreateAuthorAPI(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAuthor(t, recorder.Body, author)
 			},
 		},
 		{
@@ -192,6 +194,7 @@ func TestGetAuthorAPI(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAuthor(t, recorder.Body, author)
 			},
 		},
 		{
@@ -276,6 +279,7 @@ func TestDeleteAuthorAPI(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAuthor(t, recorder.Body, author)
 			},
 		},
 		{
@@ -330,4 +334,18 @@ func TestDeleteAuthorAPI(t *testing.T) {
 			tc.checkResponse(recorder)
 		})
 	}
+}
+
+func requireBodyMatchAuthor(t *testing.T, body *bytes.Buffer, author db.Author) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var gotAuthor db.Author
+	err = json.Unmarshal(data, &gotAuthor)
+	require.NoError(t, err)
+	require.Equal(t, author.AuthorName, gotAuthor.AuthorName)
+	require.Equal(t, author.Website, gotAuthor.Website)
+	require.Equal(t, author.Instagram, gotAuthor.Instagram)
+	require.Equal(t, author.Youtube, gotAuthor.Youtube)
+	require.Equal(t, author.UserCreated, gotAuthor.UserCreated)
 }
