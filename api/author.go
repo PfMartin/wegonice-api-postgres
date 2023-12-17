@@ -82,7 +82,7 @@ type deleteAuthorRequest struct {
 
 func (server *Server) deleteAuthor(ctx *gin.Context) {
 	var req deleteAuthorRequest
-	if err := ctx.BindUri(&req); err != nil {
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}

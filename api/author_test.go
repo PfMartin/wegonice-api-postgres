@@ -225,7 +225,7 @@ func TestGetAuthorAPI(t *testing.T) {
 			},
 		},
 		{
-			name: "NotFound",
+			name: "InternalError",
 			url:  fmt.Sprintf("/authors/%d", author.ID),
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAuthor(gomock.Any(), author.ID).Times(1).Return(db.Author{}, sql.ErrConnDone)
@@ -248,6 +248,80 @@ func TestGetAuthorAPI(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			request, err := http.NewRequest(http.MethodGet, tc.url, bytes.NewBuffer([]byte{}))
+			require.NoError(t, err)
+
+			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
+func TestDeleteAuthorAPI(t *testing.T) {
+	user, _ := randomUser(t)
+	author := randomAuthor(t, user.Email)
+
+	testCases := []struct {
+		name          string
+		url           string
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteAuthorById(gomock.Any(), author.ID).Times(1).Return(author, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidURI",
+			url:  "/authors/wrong",
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteAuthorById(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidID",
+			url:  "/authors/0",
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteAuthorById(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalError",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteAuthorById(gomock.Any(), author.ID).Times(1).Return(db.Author{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			request, err := http.NewRequest(http.MethodDelete, tc.url, bytes.NewBuffer([]byte{}))
 			require.NoError(t, err)
 
 			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
