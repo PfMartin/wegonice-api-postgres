@@ -2,7 +2,9 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,11 +15,13 @@ import (
 	"github.com/PfMartin/wegonice-api/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
 
 func randomAuthor(t *testing.T, userEmail string) (author db.Author) {
 	return db.Author{
+		ID:          1,
 		AuthorName:  util.RandomString(6),
 		Website:     util.RandomString(6),
 		Instagram:   util.RandomString(6),
@@ -59,6 +63,89 @@ func TestCreateAuthorAPI(t *testing.T) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
+		{
+			name: "ForeignKeyViolation",
+			body: gin.H{
+				"author_name": author.AuthorName,
+				"website":     author.Website,
+				"instagram":   author.Instagram,
+				"youtube":     author.Youtube,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.CreateAuthorParams{
+					AuthorName:  author.AuthorName,
+					Website:     author.Website,
+					Instagram:   author.Instagram,
+					Youtube:     author.Youtube,
+					UserCreated: author.UserCreated,
+				}
+
+				store.EXPECT().CreateAuthor(gomock.Any(), arg).Times(1).Return(db.Author{}, &pq.Error{Code: "23503"})
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "UniqueViolation",
+			body: gin.H{
+				"author_name": author.AuthorName,
+				"website":     author.Website,
+				"instagram":   author.Instagram,
+				"youtube":     author.Youtube,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.CreateAuthorParams{
+					AuthorName:  author.AuthorName,
+					Website:     author.Website,
+					Instagram:   author.Instagram,
+					Youtube:     author.Youtube,
+					UserCreated: author.UserCreated,
+				}
+
+				store.EXPECT().CreateAuthor(gomock.Any(), arg).Times(1).Return(db.Author{}, &pq.Error{Code: "23505"})
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "UniqueViolation",
+			body: gin.H{
+				"author_name": author.AuthorName,
+				"website":     author.Website,
+				"instagram":   author.Instagram,
+				"youtube":     author.Youtube,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.CreateAuthorParams{
+					AuthorName:  author.AuthorName,
+					Website:     author.Website,
+					Instagram:   author.Instagram,
+					Youtube:     author.Youtube,
+					UserCreated: author.UserCreated,
+				}
+
+				store.EXPECT().CreateAuthor(gomock.Any(), arg).Times(1).Return(db.Author{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "BadRequest",
+			body: gin.H{
+				"website":   author.Website,
+				"instagram": author.Instagram,
+				"youtube":   author.Youtube,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().CreateAuthor(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -77,6 +164,90 @@ func TestCreateAuthorAPI(t *testing.T) {
 
 			url := "/authors"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
+func TestGetAuthorAPI(t *testing.T) {
+	user, _ := randomUser(t)
+	author := randomAuthor(t, user.Email)
+
+	testCases := []struct {
+		name          string
+		url           string
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), author.ID).Times(1).Return(author, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidURI",
+			url:  "/authors",
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidID",
+			url:  "/authors/0",
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "NotFound",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), author.ID).Times(1).Return(db.Author{}, sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name: "NotFound",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), author.ID).Times(1).Return(db.Author{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			request, err := http.NewRequest(http.MethodGet, tc.url, bytes.NewBuffer([]byte{}))
 			require.NoError(t, err)
 
 			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
