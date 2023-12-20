@@ -20,9 +20,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func randomAuthor(t *testing.T, userEmail string) (author db.Author) {
+func randomAuthor(t *testing.T, userEmail string, params ...int64) (author db.Author) {
+	id := int64(1)
+
+	if len(params) > 0 {
+		id = params[0]
+	}
+
 	return db.Author{
-		ID:          1,
+		ID:          id,
 		AuthorName:  util.RandomString(6),
 		Website:     util.RandomString(6),
 		Instagram:   util.RandomString(6),
@@ -466,7 +472,92 @@ func TestUpdateAuthorAPI(t *testing.T) {
 }
 
 func TestListAuthorsAPI(t *testing.T) {
+	user, _ := randomUser(t)
 
+	var authors []db.Author
+	for i := 1; i <= 10; i++ {
+		authors = append(authors, randomAuthor(t, user.Email, int64(i)))
+	}
+
+	testCases := []struct {
+		name          string
+		url           string
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			url:  fmt.Sprintf("/authors?page_id=%d&page_size=%d", 1, 5),
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListAuthorsParams{
+					Limit:  5,
+					Offset: 0,
+				}
+
+				store.EXPECT().ListAuthors(gomock.Any(), arg).Times(1).Return(authors, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				// TODO: Check fields of each author here
+			},
+		},
+		{
+			name: "NoPageId",
+			url:  fmt.Sprintf("/authors?page_size=%d", 5),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().ListAuthors(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "NoPageSize",
+			url:  fmt.Sprintf("/authors?page_id=%d", 0),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().ListAuthors(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalError",
+			url:  fmt.Sprintf("/authors?page_id=%d&page_size=%d", 1, 5),
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListAuthorsParams{
+					Limit:  5,
+					Offset: 0,
+				}
+
+				store.EXPECT().ListAuthors(gomock.Any(), arg).Times(1).Return([]db.Author{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			request, err := http.NewRequest(http.MethodGet, tc.url, bytes.NewBuffer([]byte{}))
+			require.NoError(t, err)
+
+			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
 }
 
 func requireBodyMatchAuthor(t *testing.T, body *bytes.Buffer, author db.Author) {
