@@ -237,6 +237,16 @@ func TestGetAuthorAPI(t *testing.T) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
+		{
+			name: "UniqueViolation",
+			url:  fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAuthor(gomock.Any(), author.ID).Times(1).Return(db.Author{}, &pq.Error{Code: "23503"})
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -334,6 +344,129 @@ func TestDeleteAuthorAPI(t *testing.T) {
 			tc.checkResponse(recorder)
 		})
 	}
+}
+
+func TestUpdateAuthorAPI(t *testing.T) {
+	user, _ := randomUser(t)
+	author := randomAuthor(t, user.Email)
+
+	updateAuthorParams := db.UpdateAuthorByIdParams{
+		ID:         author.ID,
+		AuthorName: util.RandomString(6),
+		Website:    util.RandomString(10),
+		Instagram:  util.RandomString(10),
+		Youtube:    util.RandomString(10),
+	}
+
+	updatedAuthor := db.Author{
+		ID:         author.ID,
+		AuthorName: updateAuthorParams.AuthorName,
+		Website:    updateAuthorParams.Website,
+		Instagram:  updateAuthorParams.Instagram,
+		Youtube:    updateAuthorParams.Youtube,
+	}
+
+	testCases := []struct {
+		name          string
+		url           string
+		body          gin.H
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: gin.H{
+				"author_name": updateAuthorParams.AuthorName,
+				"website":     updateAuthorParams.Website,
+				"instagram":   updateAuthorParams.Instagram,
+				"youtube":     updateAuthorParams.Youtube,
+			},
+			url: fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+
+				store.EXPECT().UpdateAuthorById(gomock.Any(), updateAuthorParams).Times(1).Return(updatedAuthor, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAuthor(t, recorder.Body, updatedAuthor)
+			},
+		},
+		{
+			name: "InvalidBody",
+			body: gin.H{
+				"website":   updateAuthorParams.Website,
+				"instagram": updateAuthorParams.Instagram,
+				"youtube":   updateAuthorParams.Youtube,
+			},
+			url: fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+
+				store.EXPECT().UpdateAuthorById(gomock.Any(), updateAuthorParams).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidID",
+			body: gin.H{
+				"website":   updateAuthorParams.Website,
+				"instagram": updateAuthorParams.Instagram,
+				"youtube":   updateAuthorParams.Youtube,
+			},
+			url: "/authors/0",
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().UpdateAuthorById(gomock.Any(), updateAuthorParams).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalError",
+			body: gin.H{
+				"author_name": updateAuthorParams.AuthorName,
+				"website":     updateAuthorParams.Website,
+				"instagram":   updateAuthorParams.Instagram,
+				"youtube":     updateAuthorParams.Youtube,
+			},
+			url: fmt.Sprintf("/authors/%d", author.ID),
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().UpdateAuthorById(gomock.Any(), updateAuthorParams).Times(1).Return(db.Author{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			request, err := http.NewRequest(http.MethodPut, tc.url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			addAuthorization(t, request, server.tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
+func TestListAuthorsAPI(t *testing.T) {
+
 }
 
 func requireBodyMatchAuthor(t *testing.T, body *bytes.Buffer, author db.Author) {
