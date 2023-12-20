@@ -498,7 +498,7 @@ func TestListAuthorsAPI(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				// TODO: Check fields of each author here
+				requireBodyArrayMatchAuthors(t, recorder.Body, authors)
 			},
 		},
 		{
@@ -560,6 +560,14 @@ func TestListAuthorsAPI(t *testing.T) {
 	}
 }
 
+func requireMatchAuthor(t *testing.T, author db.Author, gotAuthor db.Author) {
+	require.Equal(t, author.AuthorName, gotAuthor.AuthorName)
+	require.Equal(t, author.Website, gotAuthor.Website)
+	require.Equal(t, author.Instagram, gotAuthor.Instagram)
+	require.Equal(t, author.Youtube, gotAuthor.Youtube)
+	require.Equal(t, author.UserCreated, gotAuthor.UserCreated)
+}
+
 func requireBodyMatchAuthor(t *testing.T, body *bytes.Buffer, author db.Author) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
@@ -567,9 +575,19 @@ func requireBodyMatchAuthor(t *testing.T, body *bytes.Buffer, author db.Author) 
 	var gotAuthor db.Author
 	err = json.Unmarshal(data, &gotAuthor)
 	require.NoError(t, err)
-	require.Equal(t, author.AuthorName, gotAuthor.AuthorName)
-	require.Equal(t, author.Website, gotAuthor.Website)
-	require.Equal(t, author.Instagram, gotAuthor.Instagram)
-	require.Equal(t, author.Youtube, gotAuthor.Youtube)
-	require.Equal(t, author.UserCreated, gotAuthor.UserCreated)
+	requireMatchAuthor(t, author, gotAuthor)
+}
+
+func requireBodyArrayMatchAuthors(t *testing.T, body *bytes.Buffer, authors []db.Author) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var gotAuthors []db.Author
+	err = json.Unmarshal(data, &gotAuthors)
+	require.NoError(t, err)
+
+	for i, gotAuthor := range gotAuthors {
+		requireMatchAuthor(t, authors[i], gotAuthor)
+	}
+
 }
