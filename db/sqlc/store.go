@@ -9,6 +9,7 @@ import (
 // Store provides all functions to execute db queries and transactions
 type Store interface {
 	Querier
+	CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -52,6 +53,8 @@ type CreateRecipeTxResult struct {
 func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error) {
 	var result CreateRecipeTxResult
 
+	fmt.Println("createRecipeTx started")
+
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
@@ -60,7 +63,10 @@ func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecip
 			return err
 		}
 
+		fmt.Println(result.Recipe)
+
 		for _, ingredient := range ingredientsArg {
+			ingredient.RecipeID = result.Recipe.ID
 			recipeIngredient, err := q.CreateRecipeIngredient(context.Background(), ingredient)
 			if err != nil {
 				return err
@@ -70,6 +76,7 @@ func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecip
 		}
 
 		for _, step := range stepsArg {
+			step.RecipeID = result.Recipe.ID
 			recipeStep, err := q.CreateRecipeStep(context.Background(), step)
 			if err != nil {
 				return err

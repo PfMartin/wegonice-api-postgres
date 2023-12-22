@@ -96,6 +96,21 @@ func (mr *MockStoreMockRecorder) CreateRecipeStep(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRecipeStep", reflect.TypeOf((*MockStore)(nil).CreateRecipeStep), arg0, arg1)
 }
 
+// CreateRecipeTx mocks base method.
+func (m *MockStore) CreateRecipeTx(arg0 context.Context, arg1 db.CreateRecipeParams, arg2 []db.CreateRecipeIngredientParams, arg3 []db.CreateRecipeStepParams) (db.CreateRecipeTxResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRecipeTx", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(db.CreateRecipeTxResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRecipeTx indicates an expected call of CreateRecipeTx.
+func (mr *MockStoreMockRecorder) CreateRecipeTx(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRecipeTx", reflect.TypeOf((*MockStore)(nil).CreateRecipeTx), arg0, arg1, arg2, arg3)
+}
+
 // CreateSession mocks base method.
 func (m *MockStore) CreateSession(arg0 context.Context, arg1 db.CreateSessionParams) (db.Session, error) {
 	m.ctrl.T.Helper()
