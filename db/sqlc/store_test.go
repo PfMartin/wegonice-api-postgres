@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateRecipeTx(t *testing.T) {
+func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
 	store := NewStore(testDB)
 
 	author := createRandomAuthor(t)
@@ -41,6 +41,24 @@ func TestCreateRecipeTx(t *testing.T) {
 	}
 
 	result, err := store.CreateRecipeTx(context.Background(), recipeArg, recipeIngredientsArg, recipeStepsArg)
+	require.NoError(t, err)
+	require.NotEmpty(t, result)
+
+	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
+
+	return result
+}
+
+func TestCreateRecipeTx(t *testing.T) {
+	createRandomRecipeTx(t)
+}
+
+func TestDeleteRecipeTx(t *testing.T) {
+	createRecipeResult := createRandomRecipeTx(t)
+
+	store := NewStore(testDB)
+
+	result, err := store.DeleteRecipeTx(context.Background(), createRecipeResult.Recipe.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 

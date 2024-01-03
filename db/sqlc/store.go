@@ -10,6 +10,7 @@ import (
 type Store interface {
 	Querier
 	CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error)
+	DeleteRecipeTx(ctx context.Context, recipeID int64) (DeleteRecipeTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -93,12 +94,29 @@ type DeleteRecipeTxResult struct {
 	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
 }
 
-// func (store *SQLStore) DeleteRecipeTx(ctx context.Context, recipeID uint32) (CreateRecipeTxResult, error) {
-// 	var result DeleteRecipeTxResult
+func (store *SQLStore) DeleteRecipeTx(ctx context.Context, recipeID int64) (DeleteRecipeTxResult, error) {
+	var result DeleteRecipeTxResult
 
-// 	err := store.execTx(ctx, func(q *Queries) error {
-// 		var err error
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
 
-// 	})
+		result.RecipeIngredients, err = q.DeleteRecipeIngredientsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
 
-// }
+		result.RecipeSteps, err = q.DeleteRecipeStepsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		result.Recipe, err = q.DeleteRecipeById(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
+}
