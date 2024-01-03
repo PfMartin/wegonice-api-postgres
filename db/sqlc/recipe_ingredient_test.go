@@ -95,16 +95,16 @@ func TestUpdateRecipeIngredientById(t *testing.T) {
 }
 
 func TestDeleteRecipeIngredientsByRecipeId(t *testing.T) {
-	recipeId := 1
+	recipeId := util.RandomInt(1, 100)
 
 	var recipeIngredients []RecipeIngredient
 
 	for i := 0; i < 10; i++ {
-		recipeIngredient := createRandomRecipeIngredient(t, int64(recipeId))
+		recipeIngredient := createRandomRecipeIngredient(t, recipeId)
 		recipeIngredients = append(recipeIngredients, recipeIngredient)
 	}
 
-	deletedRecipeIngredients, err := testQueries.DeleteRecipeIngredientsByRecipeId(context.Background(), 1)
+	deletedRecipeIngredients, err := testQueries.DeleteRecipeIngredientsByRecipeId(context.Background(), recipeId)
 	require.NoError(t, err)
 	require.NotEmpty(t, deletedRecipeIngredients)
 

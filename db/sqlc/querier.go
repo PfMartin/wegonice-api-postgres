@@ -22,6 +22,7 @@ type Querier interface {
 	DeleteRecipeIngredientById(ctx context.Context, id int64) (RecipeIngredient, error)
 	DeleteRecipeIngredientsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeIngredient, error)
 	DeleteRecipeStepById(ctx context.Context, id int64) (RecipeStep, error)
+	DeleteRecipeStepsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeStep, error)
 	GetAuthor(ctx context.Context, id int64) (Author, error)
 	GetRecipe(ctx context.Context, id int64) (Recipe, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
