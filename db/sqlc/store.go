@@ -53,8 +53,6 @@ type CreateRecipeTxResult struct {
 func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error) {
 	var result CreateRecipeTxResult
 
-	fmt.Println("createRecipeTx started")
-
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
@@ -62,8 +60,6 @@ func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecip
 		if err != nil {
 			return err
 		}
-
-		fmt.Println(result.Recipe)
 
 		for _, ingredient := range ingredientsArg {
 			ingredient.RecipeID = result.Recipe.ID
@@ -89,5 +85,20 @@ func (store *SQLStore) CreateRecipeTx(ctx context.Context, recipeArg CreateRecip
 	})
 
 	return result, err
-
 }
+
+type DeleteRecipeTxResult struct {
+	Recipe            Recipe             `json:"recipe"`
+	RecipeIngredients []RecipeIngredient `json:"recipe_ingredients"`
+	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
+}
+
+// func (store *SQLStore) DeleteRecipeTx(ctx context.Context, recipeID uint32) (CreateRecipeTxResult, error) {
+// 	var result DeleteRecipeTxResult
+
+// 	err := store.execTx(ctx, func(q *Queries) error {
+// 		var err error
+
+// 	})
+
+// }

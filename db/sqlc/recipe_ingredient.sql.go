@@ -71,6 +71,43 @@ func (q *Queries) DeleteRecipeIngredientById(ctx context.Context, id int64) (Rec
 	return i, err
 }
 
+const deleteRecipeIngredientsByRecipeId = `-- name: DeleteRecipeIngredientsByRecipeId :many
+DELETE FROM recipe_ingredients
+WHERE recipe_id = $1
+RETURNING id, rank, ingredient_name, unit, amount, recipe_id, created_at
+`
+
+func (q *Queries) DeleteRecipeIngredientsByRecipeId(ctx context.Context, recipeID int64) ([]RecipeIngredient, error) {
+	rows, err := q.db.QueryContext(ctx, deleteRecipeIngredientsByRecipeId, recipeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecipeIngredient{}
+	for rows.Next() {
+		var i RecipeIngredient
+		if err := rows.Scan(
+			&i.ID,
+			&i.Rank,
+			&i.IngredientName,
+			&i.Unit,
+			&i.Amount,
+			&i.RecipeID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRecipeIngredientsByRecipeId = `-- name: ListRecipeIngredientsByRecipeId :many
 SELECT id, rank, ingredient_name, unit, amount, recipe_id, created_at FROM recipe_ingredients
 WHERE recipe_id = $1

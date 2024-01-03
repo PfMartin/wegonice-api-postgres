@@ -93,3 +93,27 @@ func TestUpdateRecipeIngredientById(t *testing.T) {
 	require.Equal(t, updatedRecipeIngredient.Unit, arg.Unit)
 	require.Equal(t, updatedRecipeIngredient.Amount, arg.Amount)
 }
+
+func TestDeleteRecipeIngredientsByRecipeId(t *testing.T) {
+	recipeId := 1
+
+	var recipeIngredients []RecipeIngredient
+
+	for i := 0; i < 10; i++ {
+		recipeIngredient := createRandomRecipeIngredient(t, int64(recipeId))
+		recipeIngredients = append(recipeIngredients, recipeIngredient)
+	}
+
+	deletedRecipeIngredients, err := testQueries.DeleteRecipeIngredientsByRecipeId(context.Background(), 1)
+	require.NoError(t, err)
+	require.NotEmpty(t, deletedRecipeIngredients)
+
+	for i, deletedRecipeIngredient := range deletedRecipeIngredients {
+		require.Equal(t, recipeIngredients[i].ID, deletedRecipeIngredient.ID)
+		require.Equal(t, recipeIngredients[i].IngredientName, deletedRecipeIngredient.IngredientName)
+		require.Equal(t, recipeIngredients[i].Rank, deletedRecipeIngredient.Rank)
+		require.Equal(t, recipeIngredients[i].Unit, deletedRecipeIngredient.Unit)
+		require.Equal(t, recipeIngredients[i].Amount, deletedRecipeIngredient.Amount)
+		require.WithinDuration(t, recipeIngredients[i].CreatedAt, deletedRecipeIngredient.CreatedAt, time.Second)
+	}
+}

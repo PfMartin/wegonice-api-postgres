@@ -29,3 +29,8 @@ RETURNING *;
 DELETE FROM recipe_ingredients
 WHERE id = $1
 RETURNING *;
+
+-- name: DeleteRecipeIngredientsByRecipeId :many
+DELETE FROM recipe_ingredients
+WHERE recipe_id = $1
+RETURNING *;
