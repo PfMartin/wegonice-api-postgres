@@ -12,6 +12,7 @@ type Store interface {
 	CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error)
 	DeleteRecipeTx(ctx context.Context, recipeID int64) (DeleteRecipeTxResult, error)
 	GetRecipeTx(ctx context.Context, recipeID int64) (GetRecipeTxResult, error)
+	UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByRecipeIdParams, stepsArg []UpdateRecipeStepByRecipeIdParams) (UpdateRecipeTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -161,12 +162,37 @@ type UpdateRecipeTxResult struct {
 	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
 }
 
-// func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByIdParams, stepsArg []UpdateRecipeStepByIdParams) (UpdateRecipeTxResult, error) {
-// 	var result UpdateRecipeTxResult
+func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByRecipeIdParams, stepsArg []UpdateRecipeStepByRecipeIdParams) (UpdateRecipeTxResult, error) {
+	var result UpdateRecipeTxResult
 
-// 	err := store.execTx(ctx, func(q *Queries) error {
-// 		var err error {
-// 			result.Recipe
-// 		}
-// 	})
-// }
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		for _, ingredient := range ingredientsArg {
+			recipeIngredient, err := q.UpdateRecipeIngredientByRecipeId(ctx, ingredient)
+			if err != nil {
+				return err
+			}
+
+			result.RecipeIngredients = append(result.RecipeIngredients, recipeIngredient)
+		}
+
+		for _, step := range stepsArg {
+			recipestep, err := q.UpdateRecipeStepByRecipeId(ctx, step)
+			if err != nil {
+				return err
+			}
+
+			result.RecipeSteps = append(result.RecipeSteps, recipestep)
+		}
+
+		result.Recipe, err = q.UpdateRecipeById(ctx, recipeArg)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
+}
