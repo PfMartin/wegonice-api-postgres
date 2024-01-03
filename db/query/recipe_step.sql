@@ -21,6 +21,15 @@ WHERE
   id = $1
 RETURNING *;
 
+-- name: UpdateRecipeStepByRecipeId :one
+UPDATE recipe_steps
+SET 
+  rank = $2,
+  step_description = $3
+WHERE 
+  recipe_id = $1
+RETURNING *;
+
 -- name: DeleteRecipeStepById :one
 DELETE FROM recipe_steps
 WHERE id = $1

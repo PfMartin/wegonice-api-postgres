@@ -155,3 +155,32 @@ func (q *Queries) UpdateRecipeStepById(ctx context.Context, arg UpdateRecipeStep
 	)
 	return i, err
 }
+
+const updateRecipeStepByRecipeId = `-- name: UpdateRecipeStepByRecipeId :one
+UPDATE recipe_steps
+SET 
+  rank = $2,
+  step_description = $3
+WHERE 
+  recipe_id = $1
+RETURNING id, rank, step_description, recipe_id, created_at
+`
+
+type UpdateRecipeStepByRecipeIdParams struct {
+	RecipeID        int64  `json:"recipe_id"`
+	Rank            int32  `json:"rank"`
+	StepDescription string `json:"step_description"`
+}
+
+func (q *Queries) UpdateRecipeStepByRecipeId(ctx context.Context, arg UpdateRecipeStepByRecipeIdParams) (RecipeStep, error) {
+	row := q.db.QueryRowContext(ctx, updateRecipeStepByRecipeId, arg.RecipeID, arg.Rank, arg.StepDescription)
+	var i RecipeStep
+	err := row.Scan(
+		&i.ID,
+		&i.Rank,
+		&i.StepDescription,
+		&i.RecipeID,
+		&i.CreatedAt,
+	)
+	return i, err
+}

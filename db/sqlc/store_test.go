@@ -64,3 +64,15 @@ func TestDeleteRecipeTx(t *testing.T) {
 
 	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
 }
+
+func TestGetRecipeTx(t *testing.T) {
+	createRecipeResult := createRandomRecipeTx(t)
+
+	store := NewStore(testDB)
+
+	result, err := store.GetRecipeTx(context.Background(), createRecipeResult.Recipe.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, result)
+
+	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
+}

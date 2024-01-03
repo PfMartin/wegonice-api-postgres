@@ -25,6 +25,17 @@ WHERE
   id = $1
 RETURNING *;
 
+-- name: UpdateRecipeIngredientByRecipeId :one
+UPDATE recipe_ingredients
+SET 
+  rank = $2,
+  ingredient_name = $3,
+  unit = $4,
+  amount = $5
+WHERE 
+  recipe_id = $1
+RETURNING *;
+
 -- name: DeleteRecipeIngredientById :one
 DELETE FROM recipe_ingredients
 WHERE id = $1

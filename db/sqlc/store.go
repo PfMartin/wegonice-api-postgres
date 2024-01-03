@@ -11,6 +11,7 @@ type Store interface {
 	Querier
 	CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error)
 	DeleteRecipeTx(ctx context.Context, recipeID int64) (DeleteRecipeTxResult, error)
+	GetRecipeTx(ctx context.Context, recipeID int64) (GetRecipeTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -120,3 +121,52 @@ func (store *SQLStore) DeleteRecipeTx(ctx context.Context, recipeID int64) (Dele
 
 	return result, err
 }
+
+type GetRecipeTxResult struct {
+	Recipe            Recipe             `json:"recipe"`
+	RecipeIngredients []RecipeIngredient `json:"recipe_ingredients"`
+	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
+}
+
+func (store *SQLStore) GetRecipeTx(ctx context.Context, recipeID int64) (GetRecipeTxResult, error) {
+	var result GetRecipeTxResult
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		result.RecipeIngredients, err = q.ListRecipeIngredientsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		result.RecipeSteps, err = q.ListRecipeStepsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		result.Recipe, err = q.GetRecipe(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
+}
+
+type UpdateRecipeTxResult struct {
+	Recipe            Recipe             `json:"recipe"`
+	RecipeIngredients []RecipeIngredient `json:"recipe_ingredients"`
+	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
+}
+
+// func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByIdParams, stepsArg []UpdateRecipeStepByIdParams) (UpdateRecipeTxResult, error) {
+// 	var result UpdateRecipeTxResult
+
+// 	err := store.execTx(ctx, func(q *Queries) error {
+// 		var err error {
+// 			result.Recipe
+// 		}
+// 	})
+// }

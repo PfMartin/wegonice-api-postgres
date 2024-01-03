@@ -88,6 +88,23 @@ func TestUpdateRecipeStepById(t *testing.T) {
 	require.Equal(t, updatedRecipeStep.StepDescription, arg.StepDescription)
 }
 
+func TestUpdateRecipeStepByRecipeId(t *testing.T) {
+	recipeStep := createRandomRecipeStep(t)
+
+	arg := UpdateRecipeStepByRecipeIdParams{
+		RecipeID:        recipeStep.RecipeID,
+		Rank:            int32(util.RandomInt(1, 10)),
+		StepDescription: util.RandomString(50),
+	}
+
+	updatedRecipeStep, err := testQueries.UpdateRecipeStepByRecipeId(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedRecipeStep)
+
+	require.Equal(t, updatedRecipeStep.Rank, arg.Rank)
+	require.Equal(t, updatedRecipeStep.StepDescription, arg.StepDescription)
+}
+
 func TestDeleteRecipeStepsByRecipeId(t *testing.T) {
 	recipeId := util.RandomInt(1, 100)
 

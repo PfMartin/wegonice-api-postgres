@@ -185,3 +185,44 @@ func (q *Queries) UpdateRecipeIngredientById(ctx context.Context, arg UpdateReci
 	)
 	return i, err
 }
+
+const updateRecipeIngredientByRecipeId = `-- name: UpdateRecipeIngredientByRecipeId :one
+UPDATE recipe_ingredients
+SET 
+  rank = $2,
+  ingredient_name = $3,
+  unit = $4,
+  amount = $5
+WHERE 
+  recipe_id = $1
+RETURNING id, rank, ingredient_name, unit, amount, recipe_id, created_at
+`
+
+type UpdateRecipeIngredientByRecipeIdParams struct {
+	RecipeID       int64   `json:"recipe_id"`
+	Rank           int32   `json:"rank"`
+	IngredientName string  `json:"ingredient_name"`
+	Unit           string  `json:"unit"`
+	Amount         float64 `json:"amount"`
+}
+
+func (q *Queries) UpdateRecipeIngredientByRecipeId(ctx context.Context, arg UpdateRecipeIngredientByRecipeIdParams) (RecipeIngredient, error) {
+	row := q.db.QueryRowContext(ctx, updateRecipeIngredientByRecipeId,
+		arg.RecipeID,
+		arg.Rank,
+		arg.IngredientName,
+		arg.Unit,
+		arg.Amount,
+	)
+	var i RecipeIngredient
+	err := row.Scan(
+		&i.ID,
+		&i.Rank,
+		&i.IngredientName,
+		&i.Unit,
+		&i.Amount,
+		&i.RecipeID,
+		&i.CreatedAt,
+	)
+	return i, err
+}

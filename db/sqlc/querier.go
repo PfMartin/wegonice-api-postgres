@@ -34,7 +34,9 @@ type Querier interface {
 	UpdateAuthorById(ctx context.Context, arg UpdateAuthorByIdParams) (Author, error)
 	UpdateRecipeById(ctx context.Context, arg UpdateRecipeByIdParams) (Recipe, error)
 	UpdateRecipeIngredientById(ctx context.Context, arg UpdateRecipeIngredientByIdParams) (RecipeIngredient, error)
+	UpdateRecipeIngredientByRecipeId(ctx context.Context, arg UpdateRecipeIngredientByRecipeIdParams) (RecipeIngredient, error)
 	UpdateRecipeStepById(ctx context.Context, arg UpdateRecipeStepByIdParams) (RecipeStep, error)
+	UpdateRecipeStepByRecipeId(ctx context.Context, arg UpdateRecipeStepByRecipeIdParams) (RecipeStep, error)
 }
 
 var _ Querier = (*Queries)(nil)
