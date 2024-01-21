@@ -9,6 +9,10 @@ INSERT INTO recipe_ingredients (
   $1, $2, $3, $4, $5
 ) RETURNING *;
 
+-- name: GetRecipeIngredientById :one
+SELECT * FROM recipe_ingredients
+WHERE id = $1 LIMIT 1;
+
 -- name: ListRecipeIngredientsByRecipeId :many
 SELECT * FROM recipe_ingredients
 WHERE recipe_id = $1

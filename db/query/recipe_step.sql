@@ -7,6 +7,10 @@ INSERT INTO recipe_steps (
   $1, $2, $3
 ) RETURNING *;
 
+-- name: GetRecipeStepById :one
+SELECT * FROM recipe_steps
+WHERE id = $1 LIMIT 1;
+
 -- name: ListRecipeStepsByRecipeId :many
 SELECT * FROM recipe_steps
 WHERE recipe_id = $1

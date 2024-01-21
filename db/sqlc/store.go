@@ -169,6 +169,7 @@ func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recip
 		var err error
 
 		for _, ingredient := range ingredientsArg {
+			// TODO: Check if recipeIngredient exists, if yes update it. If not create it
 			recipeIngredient, err := q.UpdateRecipeIngredientByRecipeId(ctx, ingredient)
 			if err != nil {
 				return err
@@ -177,7 +178,11 @@ func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recip
 			result.RecipeIngredients = append(result.RecipeIngredients, recipeIngredient)
 		}
 
+		// TODO: Delete recipe ingredients
+
 		for _, step := range stepsArg {
+			// TODO: Check if recipeStep exists, if yes update it. If not create it
+
 			recipestep, err := q.UpdateRecipeStepByRecipeId(ctx, step)
 			if err != nil {
 				return err
@@ -185,6 +190,8 @@ func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recip
 
 			result.RecipeSteps = append(result.RecipeSteps, recipestep)
 		}
+
+		// TODO: Delete recipe steps
 
 		result.Recipe, err = q.UpdateRecipeById(ctx, recipeArg)
 		if err != nil {

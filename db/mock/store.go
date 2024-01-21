@@ -276,6 +276,36 @@ func (mr *MockStoreMockRecorder) GetRecipe(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecipe", reflect.TypeOf((*MockStore)(nil).GetRecipe), arg0, arg1)
 }
 
+// GetRecipeIngredientById mocks base method.
+func (m *MockStore) GetRecipeIngredientById(arg0 context.Context, arg1 int64) (db.RecipeIngredient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecipeIngredientById", arg0, arg1)
+	ret0, _ := ret[0].(db.RecipeIngredient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecipeIngredientById indicates an expected call of GetRecipeIngredientById.
+func (mr *MockStoreMockRecorder) GetRecipeIngredientById(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecipeIngredientById", reflect.TypeOf((*MockStore)(nil).GetRecipeIngredientById), arg0, arg1)
+}
+
+// GetRecipeStepById mocks base method.
+func (m *MockStore) GetRecipeStepById(arg0 context.Context, arg1 int64) (db.RecipeStep, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecipeStepById", arg0, arg1)
+	ret0, _ := ret[0].(db.RecipeStep)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecipeStepById indicates an expected call of GetRecipeStepById.
+func (mr *MockStoreMockRecorder) GetRecipeStepById(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecipeStepById", reflect.TypeOf((*MockStore)(nil).GetRecipeStepById), arg0, arg1)
+}
+
 // GetRecipeTx mocks base method.
 func (m *MockStore) GetRecipeTx(arg0 context.Context, arg1 int64) (db.GetRecipeTxResult, error) {
 	m.ctrl.T.Helper()

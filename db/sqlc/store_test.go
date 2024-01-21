@@ -8,12 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
-	store := NewStore(testDB)
-
-	author := createRandomAuthor(t)
-
-	recipeArg := CreateRecipeParams{
+func getRandomRecipe(author Author) CreateRecipeParams {
+	return CreateRecipeParams{
 		RecipeName:   util.RandomString(6),
 		Link:         util.RandomString(10),
 		AuthorID:     author.ID,
@@ -21,10 +17,12 @@ func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
 		PrepTimeUnit: util.RandomString(5),
 		UserCreated:  author.UserCreated,
 	}
+}
 
-	var recipeIngredientsArg []CreateRecipeIngredientParams
-	for i := 1; i < 11; i++ {
-		recipeIngredientsArg = append(recipeIngredientsArg, CreateRecipeIngredientParams{
+func getRandomRecipeIngredients(amount int) []CreateRecipeIngredientParams {
+	var recipeIngredients []CreateRecipeIngredientParams
+	for i := 1; i < amount+1; i++ {
+		recipeIngredients = append(recipeIngredients, CreateRecipeIngredientParams{
 			IngredientName: util.RandomString(10),
 			Rank:           int32(i),
 			Unit:           util.RandomString(5),
@@ -32,13 +30,30 @@ func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
 		})
 	}
 
-	var recipeStepsArg []CreateRecipeStepParams
-	for i := 1; i < 9; i++ {
-		recipeStepsArg = append(recipeStepsArg, CreateRecipeStepParams{
+	return recipeIngredients
+}
+
+func getRandomRecipeSteps(amount int) []CreateRecipeStepParams {
+	var recipeSteps []CreateRecipeStepParams
+	for i := 1; i < amount+1; i++ {
+		recipeSteps = append(recipeSteps, CreateRecipeStepParams{
 			Rank:            int32(i),
 			StepDescription: util.RandomString(20),
 		})
 	}
+
+	return recipeSteps
+}
+
+func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
+	store := NewStore(testDB)
+
+	author := createRandomAuthor(t)
+
+	recipeArg := getRandomRecipe(author)
+
+	recipeIngredientsArg := getRandomRecipeIngredients(10)
+	recipeStepsArg := getRandomRecipeSteps(8)
 
 	result, err := store.CreateRecipeTx(context.Background(), recipeArg, recipeIngredientsArg, recipeStepsArg)
 	require.NoError(t, err)
