@@ -119,16 +119,16 @@ func TestUpdateRecipeStepByRecipeId(t *testing.T) {
 }
 
 func TestDeleteRecipeStepsByRecipeId(t *testing.T) {
-	recipeId := util.RandomInt(1, 100)
+	recipe := createRandomRecipe(t)
 
 	var recipeSteps []RecipeStep
 
 	for i := 0; i < 10; i++ {
-		recipeStep := createRandomRecipeStep(t, recipeId)
+		recipeStep := createRandomRecipeStep(t, recipe.ID)
 		recipeSteps = append(recipeSteps, recipeStep)
 	}
 
-	deletedRecipeSteps, err := testQueries.DeleteRecipeStepsByRecipeId(context.Background(), recipeId)
+	deletedRecipeSteps, err := testQueries.DeleteRecipeStepsByRecipeId(context.Background(), recipe.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, deletedRecipeSteps)
 
