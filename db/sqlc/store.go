@@ -12,7 +12,7 @@ type Store interface {
 	CreateRecipeTx(ctx context.Context, recipeArg CreateRecipeParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (CreateRecipeTxResult, error)
 	DeleteRecipeTx(ctx context.Context, recipeID int64) (DeleteRecipeTxResult, error)
 	GetRecipeTx(ctx context.Context, recipeID int64) (GetRecipeTxResult, error)
-	UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByRecipeIdParams, stepsArg []UpdateRecipeStepByRecipeIdParams) (UpdateRecipeTxResult, error)
+	UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (UpdateRecipeTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -162,15 +162,27 @@ type UpdateRecipeTxResult struct {
 	RecipeSteps       []RecipeStep       `json:"recipe_steps"`
 }
 
-func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []UpdateRecipeIngredientByRecipeIdParams, stepsArg []UpdateRecipeStepByRecipeIdParams) (UpdateRecipeTxResult, error) {
+func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recipeArg UpdateRecipeByIdParams, ingredientsArg []CreateRecipeIngredientParams, stepsArg []CreateRecipeStepParams) (UpdateRecipeTxResult, error) {
 	var result UpdateRecipeTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
+		// TODO: Could be optimized to update existing ingredients and only deleting ingredients, which are not in this array
+		currentIngredients, err := q.ListRecipeIngredientsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		for _, ingredient := range currentIngredients {
+			_, err := q.DeleteRecipeIngredientById(ctx, ingredient.ID)
+			if err != nil {
+				return err
+			}
+		}
+
 		for _, ingredient := range ingredientsArg {
-			// TODO: Check if recipeIngredient exists, if yes update it. If not create it
-			recipeIngredient, err := q.UpdateRecipeIngredientByRecipeId(ctx, ingredient)
+			recipeIngredient, err := q.CreateRecipeIngredient(ctx, ingredient)
 			if err != nil {
 				return err
 			}
@@ -178,20 +190,27 @@ func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recip
 			result.RecipeIngredients = append(result.RecipeIngredients, recipeIngredient)
 		}
 
-		// TODO: Delete recipe ingredients
+		// TODO: Could be optimized to update existing steps and only deleting steps, which are not in this array
+		currentSteps, err := q.ListRecipeStepsByRecipeId(ctx, recipeID)
+		if err != nil {
+			return err
+		}
+
+		for _, step := range currentSteps {
+			_, err := q.DeleteRecipeStepById(ctx, step.ID)
+			if err != nil {
+				return err
+			}
+		}
 
 		for _, step := range stepsArg {
-			// TODO: Check if recipeStep exists, if yes update it. If not create it
-
-			recipestep, err := q.UpdateRecipeStepByRecipeId(ctx, step)
+			recipestep, err := q.CreateRecipeStep(ctx, step)
 			if err != nil {
 				return err
 			}
 
 			result.RecipeSteps = append(result.RecipeSteps, recipestep)
 		}
-
-		// TODO: Delete recipe steps
 
 		result.Recipe, err = q.UpdateRecipeById(ctx, recipeArg)
 		if err != nil {
