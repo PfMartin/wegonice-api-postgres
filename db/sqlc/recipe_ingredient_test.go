@@ -45,6 +45,21 @@ func TestCreateRecipeIngredient(t *testing.T) {
 	createRandomRecipeIngredient(t)
 }
 
+func TestGetRecipeIngredientById(t *testing.T) {
+	newRecipeIngredient := createRandomRecipeIngredient(t)
+
+	gotRecipeIngredient, err := testQueries.GetRecipeIngredientById(context.Background(), newRecipeIngredient.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, gotRecipeIngredient)
+
+	require.Equal(t, newRecipeIngredient.IngredientName, gotRecipeIngredient.IngredientName)
+	require.Equal(t, newRecipeIngredient.Rank, gotRecipeIngredient.Rank)
+	require.Equal(t, newRecipeIngredient.RecipeID, gotRecipeIngredient.RecipeID)
+	require.Equal(t, newRecipeIngredient.Amount, gotRecipeIngredient.Amount)
+	require.Equal(t, newRecipeIngredient.Unit, gotRecipeIngredient.Unit)
+	require.WithinDuration(t, newRecipeIngredient.CreatedAt, gotRecipeIngredient.CreatedAt, time.Second)
+}
+
 func TestDeleteRecipeIngredientById(t *testing.T) {
 	recipeIngredient := createRandomRecipeIngredient(t)
 

@@ -45,6 +45,19 @@ func TestCreateRecipeStep(t *testing.T) {
 	createRandomRecipeStep(t)
 }
 
+func TestGetRecipeStepById(t *testing.T) {
+	newRecipeStep := createRandomRecipeStep(t)
+
+	gotRecipeStep, err := testQueries.GetRecipeStepById(context.Background(), newRecipeStep.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, gotRecipeStep)
+
+	require.Equal(t, newRecipeStep.StepDescription, gotRecipeStep.StepDescription)
+	require.Equal(t, newRecipeStep.Rank, gotRecipeStep.Rank)
+	require.Equal(t, newRecipeStep.RecipeID, gotRecipeStep.RecipeID)
+	require.WithinDuration(t, newRecipeStep.CreatedAt, gotRecipeStep.CreatedAt, time.Second)
+}
+
 func TestDeleteRecipeStepById(t *testing.T) {
 	recipeStep := createRandomRecipeStep(t)
 
