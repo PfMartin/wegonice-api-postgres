@@ -72,7 +72,14 @@ func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
-	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
+	require.Equal(t, recipeArg.RecipeName, result.Recipe.RecipeName)
+	require.Equal(t, recipeArg.Link, result.Recipe.Link)
+	require.Equal(t, recipeArg.AuthorID, result.Recipe.AuthorID)
+	require.Equal(t, recipeArg.PrepTime, result.Recipe.PrepTime)
+	require.Equal(t, recipeArg.PrepTimeUnit, result.Recipe.PrepTimeUnit)
+	require.Equal(t, recipeArg.UserCreated, result.Recipe.UserCreated)
+
+	// TODO: Check values of recipeIngredients and recipeSteps
 
 	return result
 }
@@ -90,7 +97,15 @@ func TestDeleteRecipeTx(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
-	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
+	require.Equal(t, createRecipeResult.Recipe.AuthorID, result.Recipe.AuthorID)
+
+	require.Equal(t, createRecipeResult.Recipe.RecipeName, result.Recipe.RecipeName)
+	require.Equal(t, createRecipeResult.Recipe.Link, result.Recipe.Link)
+	require.Equal(t, createRecipeResult.Recipe.AuthorID, result.Recipe.AuthorID)
+	require.Equal(t, createRecipeResult.Recipe.PrepTime, result.Recipe.PrepTime)
+	require.Equal(t, createRecipeResult.Recipe.PrepTimeUnit, result.Recipe.PrepTimeUnit)
+	require.Equal(t, createRecipeResult.Recipe.UserCreated, result.Recipe.UserCreated)
+	// TODO: Check values of recipeIngredients and recipeSteps
 }
 
 func TestGetRecipeTx(t *testing.T) {
@@ -102,10 +117,15 @@ func TestGetRecipeTx(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
-	// TODO: Check values of inserted recipe, recipeIngredients and recipeSteps
+	require.Equal(t, createRecipeResult.Recipe.RecipeName, result.Recipe.RecipeName)
+	require.Equal(t, createRecipeResult.Recipe.Link, result.Recipe.Link)
+	require.Equal(t, createRecipeResult.Recipe.AuthorID, result.Recipe.AuthorID)
+	require.Equal(t, createRecipeResult.Recipe.PrepTime, result.Recipe.PrepTime)
+	require.Equal(t, createRecipeResult.Recipe.PrepTimeUnit, result.Recipe.PrepTimeUnit)
+	require.Equal(t, createRecipeResult.Recipe.UserCreated, result.Recipe.UserCreated)
+	// TODO: Check values of recipeIngredients and recipeSteps
 }
 
-// TODO: Create Test for UpdateRecipeTx
 func TestUpdateRecipeTx(t *testing.T) {
 	createRecipeResult := createRandomRecipeTx(t)
 
@@ -120,7 +140,6 @@ func TestUpdateRecipeTx(t *testing.T) {
 		PrepTimeUnit: "Hours",
 	}
 
-	// Only new recipe ingredients
 	// TODO: Check updating recipe ingredients and updating recipe steps
 	newRecipeIngredients := getRandomRecipeIngredients(5, createRecipeResult.Recipe.ID)
 	for _, i := range newRecipeIngredients {
@@ -133,7 +152,13 @@ func TestUpdateRecipeTx(t *testing.T) {
 		s.RecipeID = createRecipeResult.Recipe.ID
 	}
 
-	updatedRecipe, err := store.UpdateRecipeTx(context.Background(), createRecipeResult.Recipe.ID, newRecipe, newRecipeIngredients, newRecipeSteps)
+	updateResult, err := store.UpdateRecipeTx(context.Background(), createRecipeResult.Recipe.ID, newRecipe, newRecipeIngredients, newRecipeSteps)
 	require.NoError(t, err)
-	require.NotEmpty(t, updatedRecipe)
+	require.NotEmpty(t, updateResult)
+
+	require.Equal(t, newRecipe.RecipeName, updateResult.Recipe.RecipeName)
+	require.Equal(t, newRecipe.Link, updateResult.Recipe.Link)
+	require.Equal(t, newRecipe.AuthorID, updateResult.Recipe.AuthorID)
+	require.Equal(t, newRecipe.PrepTime, updateResult.Recipe.PrepTime)
+	require.Equal(t, newRecipe.PrepTimeUnit, updateResult.Recipe.PrepTimeUnit)
 }
