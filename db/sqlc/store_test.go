@@ -79,7 +79,28 @@ func createRandomRecipeTx(t *testing.T) CreateRecipeTxResult {
 	require.Equal(t, recipeArg.PrepTimeUnit, result.Recipe.PrepTimeUnit)
 	require.Equal(t, recipeArg.UserCreated, result.Recipe.UserCreated)
 
-	// TODO: Check values of recipeIngredients and recipeSteps
+	require.Equal(t, len(result.RecipeIngredients), len(recipeIngredientsArg))
+	require.Equal(t, len(result.RecipeSteps), len(recipeStepsArg))
+
+	for _, resultI := range result.RecipeIngredients {
+		require.Equal(t, resultI.RecipeID, result.Recipe.ID)
+		for _, createI := range recipeIngredientsArg {
+			if resultI.IngredientName == createI.IngredientName {
+				require.Equal(t, resultI.Amount, createI.Amount)
+				require.Equal(t, resultI.Unit, createI.Unit)
+				require.Equal(t, resultI.Rank, createI.Rank)
+			}
+		}
+	}
+
+	for _, resultS := range result.RecipeSteps {
+		require.Equal(t, resultS.RecipeID, result.Recipe.ID)
+		for _, createI := range recipeStepsArg {
+			if resultS.StepDescription == createI.StepDescription {
+				require.Equal(t, resultS.Rank, createI.Rank)
+			}
+		}
+	}
 
 	return result
 }
@@ -161,4 +182,5 @@ func TestUpdateRecipeTx(t *testing.T) {
 	require.Equal(t, newRecipe.AuthorID, updateResult.Recipe.AuthorID)
 	require.Equal(t, newRecipe.PrepTime, updateResult.Recipe.PrepTime)
 	require.Equal(t, newRecipe.PrepTimeUnit, updateResult.Recipe.PrepTimeUnit)
+	// TODO: Check values of recipeIngredients and recipeSteps
 }
