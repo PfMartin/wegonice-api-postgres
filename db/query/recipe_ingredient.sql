@@ -9,6 +9,10 @@ INSERT INTO recipe_ingredients (
   $1, $2, $3, $4, $5
 ) RETURNING *;
 
+-- name: GetRecipeIngredientById :one
+SELECT * FROM recipe_ingredients
+WHERE id = $1 LIMIT 1;
+
 -- name: ListRecipeIngredientsByRecipeId :many
 SELECT * FROM recipe_ingredients
 WHERE recipe_id = $1
@@ -25,7 +29,23 @@ WHERE
   id = $1
 RETURNING *;
 
+-- name: UpdateRecipeIngredientByRecipeId :one
+UPDATE recipe_ingredients
+SET 
+  rank = $2,
+  ingredient_name = $3,
+  unit = $4,
+  amount = $5
+WHERE 
+  recipe_id = $1
+RETURNING *;
+
 -- name: DeleteRecipeIngredientById :one
 DELETE FROM recipe_ingredients
 WHERE id = $1
+RETURNING *;
+
+-- name: DeleteRecipeIngredientsByRecipeId :many
+DELETE FROM recipe_ingredients
+WHERE recipe_id = $1
 RETURNING *;

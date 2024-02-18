@@ -45,6 +45,19 @@ func TestCreateRecipeStep(t *testing.T) {
 	createRandomRecipeStep(t)
 }
 
+func TestGetRecipeStepById(t *testing.T) {
+	newRecipeStep := createRandomRecipeStep(t)
+
+	gotRecipeStep, err := testQueries.GetRecipeStepById(context.Background(), newRecipeStep.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, gotRecipeStep)
+
+	require.Equal(t, newRecipeStep.StepDescription, gotRecipeStep.StepDescription)
+	require.Equal(t, newRecipeStep.Rank, gotRecipeStep.Rank)
+	require.Equal(t, newRecipeStep.RecipeID, gotRecipeStep.RecipeID)
+	require.WithinDuration(t, newRecipeStep.CreatedAt, gotRecipeStep.CreatedAt, time.Second)
+}
+
 func TestDeleteRecipeStepById(t *testing.T) {
 	recipeStep := createRandomRecipeStep(t)
 
@@ -86,4 +99,43 @@ func TestUpdateRecipeStepById(t *testing.T) {
 
 	require.Equal(t, updatedRecipeStep.Rank, arg.Rank)
 	require.Equal(t, updatedRecipeStep.StepDescription, arg.StepDescription)
+}
+
+func TestUpdateRecipeStepByRecipeId(t *testing.T) {
+	recipeStep := createRandomRecipeStep(t)
+
+	arg := UpdateRecipeStepByRecipeIdParams{
+		RecipeID:        recipeStep.RecipeID,
+		Rank:            int32(util.RandomInt(1, 10)),
+		StepDescription: util.RandomString(50),
+	}
+
+	updatedRecipeStep, err := testQueries.UpdateRecipeStepByRecipeId(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedRecipeStep)
+
+	require.Equal(t, updatedRecipeStep.Rank, arg.Rank)
+	require.Equal(t, updatedRecipeStep.StepDescription, arg.StepDescription)
+}
+
+func TestDeleteRecipeStepsByRecipeId(t *testing.T) {
+	recipe := createRandomRecipe(t)
+
+	var recipeSteps []RecipeStep
+
+	for i := 0; i < 10; i++ {
+		recipeStep := createRandomRecipeStep(t, recipe.ID)
+		recipeSteps = append(recipeSteps, recipeStep)
+	}
+
+	deletedRecipeSteps, err := testQueries.DeleteRecipeStepsByRecipeId(context.Background(), recipe.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, deletedRecipeSteps)
+
+	for i, deletedRecipeStep := range deletedRecipeSteps {
+		require.Equal(t, recipeSteps[i].ID, deletedRecipeStep.ID)
+		require.Equal(t, recipeSteps[i].StepDescription, deletedRecipeStep.StepDescription)
+		require.Equal(t, recipeSteps[i].Rank, deletedRecipeStep.Rank)
+		require.WithinDuration(t, recipeSteps[i].CreatedAt, deletedRecipeStep.CreatedAt, time.Second)
+	}
 }
