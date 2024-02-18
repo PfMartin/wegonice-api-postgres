@@ -502,7 +502,7 @@ func (mr *MockStoreMockRecorder) UpdateRecipeStepByRecipeId(arg0, arg1 interface
 }
 
 // UpdateRecipeTx mocks base method.
-func (m *MockStore) UpdateRecipeTx(arg0 context.Context, arg1 int64, arg2 db.UpdateRecipeByIdParams, arg3 []db.UpdateRecipeIngredientByRecipeIdParams, arg4 []db.UpdateRecipeStepByRecipeIdParams) (db.UpdateRecipeTxResult, error) {
+func (m *MockStore) UpdateRecipeTx(arg0 context.Context, arg1 int64, arg2 db.UpdateRecipeByIdParams, arg3 []db.CreateRecipeIngredientParams, arg4 []db.CreateRecipeStepParams) (db.UpdateRecipeTxResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateRecipeTx", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(db.UpdateRecipeTxResult)

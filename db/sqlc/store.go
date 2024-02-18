@@ -182,6 +182,7 @@ func (store *SQLStore) UpdateRecipeTx(ctx context.Context, recipeID int64, recip
 		}
 
 		for _, ingredient := range ingredientsArg {
+			fmt.Println(ingredient.RecipeID)
 			recipeIngredient, err := q.CreateRecipeIngredient(ctx, ingredient)
 			if err != nil {
 				return err
